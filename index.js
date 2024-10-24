@@ -5,8 +5,14 @@ const dotenv = require("dotenv");
 dotenv.config();
 const { TOKEN } = process.env;
 
-// Create a new client instance
-const client = new Client({ intents: [GatewayIntentBits.Guilds] });
+// Create a new client instance with additional intents
+const client = new Client({
+  intents: [
+    GatewayIntentBits.Guilds,
+    GatewayIntentBits.GuildMessages, // Necessário para detectar mensagens em servidores
+    GatewayIntentBits.MessageContent, // Necessário para acessar o conteúdo das mensagens
+  ],
+});
 client.commands = new Collection();
 
 // Commands
@@ -38,9 +44,9 @@ client.once(Events.ClientReady, (readyClient) => {
 // Log in to Discord with your client's token
 client.login(TOKEN);
 
-// Events Listener
+// Events Listener for slash commands
 client.on(Events.InteractionCreate, async (interaction) => {
-  if (!interaction.isChatInputCommand) return;
+  if (!interaction.isChatInputCommand()) return;
   const command = interaction.client.commands.get(interaction.commandName);
 
   if (!command) {
@@ -55,5 +61,14 @@ client.on(Events.InteractionCreate, async (interaction) => {
     await interaction.reply({
       content: "There was an error while executing this command!",
     });
+  }
+});
+
+// Event Listener for message content
+client.on(Events.MessageCreate, async (message) => {
+  if (message.content.startsWith("=/")) {
+    await message.channel.send("Vc vacilou cara =/");
+  } else if (message.content.endsWith("bora lol")) {
+    await message.channel.send("Lol? Eu vou de yumi top ;)");
   }
 });
